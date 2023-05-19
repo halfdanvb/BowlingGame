@@ -38,6 +38,11 @@ public class GameService
     {
         var gameDomain = await _gameRepository.GetByLane(lane);
 
+        if (gameDomain.State.IsOngoing == false)
+        {
+            return;
+        }
+
         gameDomain.AddScore(score);
 
         await _unitOfWork.SaveChanges();

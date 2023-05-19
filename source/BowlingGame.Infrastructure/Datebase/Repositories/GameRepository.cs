@@ -23,7 +23,6 @@ public class GameRepository : IGameRepository
             .Include(g => g.Rows)
             .ThenInclude(r => r.Frames)
             .Where(g => g.Lane == lane)
-            .Where(g => g.IsOngoing)
             .SingleAsync();
 
         return new GameDomain(game);

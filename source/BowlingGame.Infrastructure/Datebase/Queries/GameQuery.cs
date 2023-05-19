@@ -13,7 +13,6 @@ public class GameQuery : IGameQuery
     public async Task<GameDto> GetByLaneQuery(int lane)
     {
         var game = await _context.Games
-            .Where(g => g.IsOngoing)
             .Where(g => g.Lane == lane)
             .Select(g => new GameDto
             {

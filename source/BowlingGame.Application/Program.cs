@@ -23,12 +23,12 @@ internal class Program
 
         for (int i = 0; i < 42; i++)
         {
-            var random = new Random();
             await gameService.AddScore(lane, 5);
-            Thread.Sleep(1000);
-            Console.Clear();
             var scoreBoard = await gameService.GetScoreBoard(lane);
+
+            Console.Clear();
             Console.WriteLine($"{scoreBoard.ToString()}");
+            Thread.Sleep(1000);
         }
 
         Console.WriteLine("Game over. Press any key");

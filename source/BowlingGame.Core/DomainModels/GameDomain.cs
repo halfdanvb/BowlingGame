@@ -61,10 +61,7 @@ public class GameDomain
         else if (activeFrame.PointsSecondThrow.HasValue == false)
         {
             activeFrame.PointsSecondThrow = score;
-            var isBonusThrow = activeFrame.IsStrike() && IsLastTurn;
-
-            CalcuteBonusForPreviousFrames(rowWithTurn, activeFrame, isBonusThrow);
-
+            CalcuteBonusForPreviousFrames(rowWithTurn, activeFrame);
         }
         else if (IsLastTurn)
         {
@@ -72,37 +69,41 @@ public class GameDomain
             CalculateBonusForTenthFrame(activeFrame);
         }
 
-        CalculateTotalScoreForRow(rowWithTurn);
-
         if (activeFrame.IsStrike() || activeFrame.ThrowsUsed())
         {
             MoveTurn(rowWithTurn, activeFrame);
         }
+
+        CalculateTotalScoreForRow(rowWithTurn);
     }
 
-    private void CalcuteBonusForPreviousFrames(Row rowWithTurn, Frame activeFrame, bool bonusThrow = false)
+    private void CalcuteBonusForPreviousFrames(Row rowWithTurn, Frame activeFrame)
     {
         var previousFrame = rowWithTurn.Frames
             .SingleOrDefault(f => f.Order == activeFrame.Order - 1);
 
-        var beforePreviousFrame = rowWithTurn.Frames
-            .SingleOrDefault(f => f.Order == activeFrame.Order - 2);
-
-        if (previousFrame != null)
+        if (previousFrame == null)
         {
-            if (previousFrame.IsSpare())
-            {
-                previousFrame.PointsBonus = activeFrame.FirstThrowValue();
-            }
+            return;
+        }
 
-            if (previousFrame.IsStrike())
-            {
-                if (beforePreviousFrame != null && beforePreviousFrame.IsStrike() && bonusThrow == false)
-                {
-                    beforePreviousFrame.PointsBonus += activeFrame.FirstThrowValue();
-                }
+        if (previousFrame.IsSpare())
+        {
+            previousFrame.PointsBonus = activeFrame.FirstThrowValue();
+        }
 
-                previousFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue();
+        if (previousFrame.IsStrike())
+        {
+            previousFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue();
+
+            var beforePreviousFrame = rowWithTurn.Frames
+                .SingleOrDefault(f => f.Order == activeFrame.Order - 2);
+
+            var isTenthFrameBonusThrow = IsLastTurn && activeFrame.IsStrike() && activeFrame.PointsSecondThrow.HasValue;
+
+            if (beforePreviousFrame != null && beforePreviousFrame.IsStrike() && isTenthFrameBonusThrow == false)
+            {
+                beforePreviousFrame.PointsBonus += activeFrame.FirstThrowValue();
             }
         }
     }

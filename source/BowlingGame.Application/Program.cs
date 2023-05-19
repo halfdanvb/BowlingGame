@@ -21,14 +21,14 @@ internal class Program
 
         await gameService.CreateAndStart(players, lane);
 
-        for (int i = 0; i < 42; i++)
+        for (int i = 0; i < 24; i++)
         {
-            await gameService.AddScore(lane, 5);
+            await gameService.AddScore(lane, 10);
             var scoreBoard = await gameService.GetScoreBoard(lane);
 
             Console.Clear();
             Console.WriteLine($"{scoreBoard.ToString()}");
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
         }
 
         Console.WriteLine("Game over. Press any key");

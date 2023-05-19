@@ -36,6 +36,11 @@ public class GameService
 
     public async Task AddScore(int lane, int score)
     {
+        if (score < 0 || score > 10)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score));
+        }
+
         var gameDomain = await _gameRepository.GetByLane(lane);
 
         if (gameDomain.State.IsOngoing == false)

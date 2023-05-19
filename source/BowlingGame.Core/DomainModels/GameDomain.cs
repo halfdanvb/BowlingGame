@@ -56,10 +56,15 @@ public class GameDomain
         if (activeFrame.PointsFirstThrow.HasValue == false)
         {
             activeFrame.PointsFirstThrow = score;
+            CalcuteBonusForPreviousFrames(rowWithTurn, activeFrame);
         }
         else if (activeFrame.PointsSecondThrow.HasValue == false)
         {
             activeFrame.PointsSecondThrow = score;
+            var isBonusThrow = activeFrame.IsStrike() && IsLastTurn;
+
+            CalcuteBonusForPreviousFrames(rowWithTurn, activeFrame, isBonusThrow);
+
         }
         else if (IsLastTurn)
         {
@@ -67,7 +72,6 @@ public class GameDomain
             CalculateBonusForTenthFrame(activeFrame);
         }
 
-        CalcuteBonusForPreviousFrame(rowWithTurn, activeFrame);
         CalculateTotalScoreForRow(rowWithTurn);
 
         if (activeFrame.IsStrike() || activeFrame.ThrowsUsed())
@@ -76,10 +80,13 @@ public class GameDomain
         }
     }
 
-    private void CalcuteBonusForPreviousFrame(Row rowWithTurn, Frame activeFrame)
+    private void CalcuteBonusForPreviousFrames(Row rowWithTurn, Frame activeFrame, bool bonusThrow = false)
     {
         var previousFrame = rowWithTurn.Frames
             .SingleOrDefault(f => f.Order == activeFrame.Order - 1);
+
+        var beforePreviousFrame = rowWithTurn.Frames
+            .SingleOrDefault(f => f.Order == activeFrame.Order - 2);
 
         if (previousFrame != null)
         {
@@ -90,6 +97,11 @@ public class GameDomain
 
             if (previousFrame.IsStrike())
             {
+                if (beforePreviousFrame != null && beforePreviousFrame.IsStrike() && bonusThrow == false)
+                {
+                    beforePreviousFrame.PointsBonus += activeFrame.FirstThrowValue();
+                }
+
                 previousFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue();
             }
         }
@@ -99,12 +111,12 @@ public class GameDomain
     {
         if (activeFrame.IsSpare())
         {
-            activeFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue();
+            activeFrame.PointsBonus = activeFrame.BonusThrowValue();
         }
 
         if (activeFrame.IsStrike())
         {
-            activeFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue() + activeFrame.BonusThrowValue();
+            activeFrame.PointsBonus = activeFrame.SecondThrowValue() + activeFrame.BonusThrowValue();
         }
     }
 
@@ -112,6 +124,12 @@ public class GameDomain
     private void CalculateTotalScoreForRow(Row rowWithTurn)
     {
         var totalScore = rowWithTurn.Frames.Sum(f => f.FirstThrowValue() + f.SecondThrowValue() + f.BonusValue());
+
+        if (rowWithTurn.Frames.Last().IsStrike())
+        {
+            totalScore -= rowWithTurn.Frames.Last().SecondThrowValue();
+        }
+
         rowWithTurn.TotalScore = totalScore;
     }
 

@@ -11,6 +11,6 @@ Design is insprired by "Clean Architecture" and "Domain Driven Design", keeping 
 
 I'm using the repository pattern with aggregate root to ensure consistency across related objects.
 
-The console appplication is supposed to emulate a stateless bowling lane, handing over scores to the system and displaying the scoreboard. State management and game flow is handled entirely by the database and domain services.
+All business logic and validation concerning the game is encapsulated in the GameDomain class, keeping the responsibility in one central place.
 
-More validation, tests, and error handling would have been nice, but I'm out of time :) 
+The console appplication is supposed to emulate a stateless bowling lane, handing over scores to the system and displaying the scoreboard. State management and game flow is handled entirely by the database and domain services.

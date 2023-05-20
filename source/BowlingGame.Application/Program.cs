@@ -17,7 +17,7 @@ internal class Program
 
         var gameService = new GameService(gameRepository, gameQuery, unitOfWOrk);
 
-        var players = new List<string>() { "Hans", "Greate" };
+        var players = new List<string>() { "Hans", "Grete" };
         var lane = 1;
 
         await gameService.CreateAndStart(players, lane);

@@ -14,11 +14,6 @@ public class GameDomain
 
     public (bool Valid, string ErrorMessage) ValidateGame()
     {
-        if (State.IsOngoing == false)
-        {
-            return (false, "Game is not ongoing");
-        }
-
         if (State.Lane <= 0)
         {
             return (false, "Lane number invalid");
@@ -32,6 +27,16 @@ public class GameDomain
         if (State.Rows.Any(r => r.Frames.Count != 10))
         {
             return (false, "Frame count invalid");
+        }
+
+        if (State.Rows.SelectMany(r => r.Frames).Any(f => f.FirstThrowValue() + f.SecondThrowValue() > 10) && IsLastTurn == false)
+        {
+            return (false, "Frame score too high");
+        }
+
+        if (State.Rows.SelectMany(r => r.Frames).Any(f => f.FirstThrowValue() + f.SecondThrowValue() < 0))
+        {
+            return (false, "Frame score too low");
         }
 
         return (true, "");

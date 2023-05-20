@@ -18,6 +18,7 @@ public class GameQuery : IGameQuery
             {
                 Lane = g.Lane,
                 Turn = g.Turn,
+                IsOngoing = g.IsOngoing,
                 Rows = g.Rows.Select(r => new RowDto
                 {
                     PlayerName = r.PlayerName,

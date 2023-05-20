@@ -10,8 +10,14 @@ public class RowDto
     public override string ToString()
     {
         var turnMarking = HasTurn ? "* " : "";
-        var perfektMarking = TotalScore == 300 ? " - Perfekt Game" : "";
-        var gutterMarking = TotalScore == 0 ? " - Gutter Game" : "";
+        var perfektMarking  = "";
+        var gutterMarking = "";
+
+        if (Frames.Last().PointsSecondThrow.HasValue)
+        {
+            perfektMarking = TotalScore == 300 ? " - Perfekt Game" : "";
+            gutterMarking = TotalScore == 0 ? " - Gutter Game" : "";
+        }
 
         return $"{turnMarking}{PlayerName} : {string.Join('|', Frames.OrderBy(f => f.Order))} Total score: {TotalScore}{perfektMarking}{gutterMarking}";
     }

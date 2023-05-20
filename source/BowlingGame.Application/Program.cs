@@ -2,6 +2,7 @@
 using BowlingGame.Infrastructure.Datebase;
 using BowlingGame.Infrastructure.Datebase.Queries;
 using BowlingGame.Infrastructure.Datebase.Repositories;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace BowlingGame.Application;
 
@@ -21,14 +22,26 @@ internal class Program
 
         await gameService.CreateAndStart(players, lane);
 
-        for (int i = 0; i < 24; i++)
+        var gameIsOngoing = true;
+
+        while (gameIsOngoing == true)
         {
-            await gameService.AddScore(lane, 10);
+            Console.Clear();
+
             var scoreBoard = await gameService.GetScoreBoard(lane);
+            Console.WriteLine($"{scoreBoard.ToString()}");
+
+            Console.WriteLine("Enter  score:");
+            var score = Console.ReadLine();
+
+            await gameService.AddScore(lane, int.Parse(score));
 
             Console.Clear();
-            Console.WriteLine($"{scoreBoard.ToString()}");
-            Thread.Sleep(100);
+
+            var updatedScoreBoard = await gameService.GetScoreBoard(lane);
+            Console.WriteLine($"{updatedScoreBoard.ToString()}");
+
+            gameIsOngoing = updatedScoreBoard.IsOngoing;
         }
 
         Console.WriteLine("Game over. Press any key");

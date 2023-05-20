@@ -10,15 +10,18 @@ public class RowDto
     public override string ToString()
     {
         var turnMarking = HasTurn ? "* " : "";
-        var perfektMarking  = "";
-        var gutterMarking = "";
+        var verdict = "";
 
-        if (Frames.Last().PointsSecondThrow.HasValue)
+        if (Frames.Last().PointsSecondThrow.HasValue && TotalScore == 0)
         {
-            perfektMarking = TotalScore == 300 ? " - Perfekt Game" : "";
-            gutterMarking = TotalScore == 0 ? " - Gutter Game" : "";
+            verdict = " - Gutter Game";
         }
 
-        return $"{turnMarking}{PlayerName} : {string.Join('|', Frames.OrderBy(f => f.Order))} Total score: {TotalScore}{perfektMarking}{gutterMarking}";
+        if (Frames.Last().PointsExtraThrow.HasValue && TotalScore == 300)
+        {
+            verdict = " - Perfekt Game";
+        }
+
+        return $"{turnMarking}{PlayerName} : {string.Join('|', Frames.OrderBy(f => f.Order))} Total score: {TotalScore}{verdict}";
     }
 }

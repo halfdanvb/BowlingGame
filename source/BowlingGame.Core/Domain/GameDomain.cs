@@ -96,14 +96,14 @@ public class GameDomain
         {
             previousFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue();
 
-            var beforePreviousFrame = rowWithTurn.Frames
+            var framebeforePrevious = rowWithTurn.Frames
                 .SingleOrDefault(f => f.Order == activeFrame.Order - 2);
 
             var isTenthFrameBonusThrow = IsLastTurn && activeFrame.IsStrike() && activeFrame.PointsSecondThrow.HasValue;
 
-            if (beforePreviousFrame != null && beforePreviousFrame.IsStrike() && isTenthFrameBonusThrow == false)
+            if (framebeforePrevious != null && framebeforePrevious.IsStrike() && isTenthFrameBonusThrow == false)
             {
-                beforePreviousFrame.PointsBonus += activeFrame.FirstThrowValue();
+                framebeforePrevious.PointsBonus += activeFrame.FirstThrowValue();
             }
         }
     }

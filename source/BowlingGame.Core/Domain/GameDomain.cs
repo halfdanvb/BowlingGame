@@ -109,9 +109,10 @@ public class GameDomain
                 return;
             }
 
+            var isFirstThrow = activeFrame.PointsSecondThrow.HasValue == false;
             var isTenthFrameBonusThrow = IsLastTurn && activeFrame.IsStrike() && activeFrame.PointsSecondThrow.HasValue;
 
-            if (framebeforePrevious.IsStrike() && activeFrame.PointsSecondThrow.HasValue == false && isTenthFrameBonusThrow == false)
+            if (framebeforePrevious.IsStrike() && isFirstThrow && isTenthFrameBonusThrow == false)
             {
                 framebeforePrevious.PointsBonus += activeFrame.FirstThrowValue();
             }

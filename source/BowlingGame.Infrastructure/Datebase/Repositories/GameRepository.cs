@@ -1,4 +1,4 @@
-﻿using BowlingGame.Core.DomainModels;
+﻿using BowlingGame.Core.Domain;
 using BowlingGame.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +14,7 @@ public class GameRepository : IGameRepository
 
     public void Add(GameDomain game)
     {
-        _context.Games.Add(game.State);
+        _context.Games.Add(game.GameState);
     }
 
     public async Task<GameDomain> GetByLane(int lane)

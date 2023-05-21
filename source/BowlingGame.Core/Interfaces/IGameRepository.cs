@@ -1,4 +1,4 @@
-﻿using BowlingGame.Core.DomainModels;
+﻿using BowlingGame.Core.Domain;
 
 namespace BowlingGame.Core.Interfaces;
 public interface IGameRepository

@@ -1,40 +1,43 @@
-﻿using BowlingGame.Core.Entities;
+﻿using BowlingGame.Core.Domain.Strategies;
+using BowlingGame.Core.Entities;
 using BowlingGame.Core.Extensions;
+using BowlingGame.Core.Interfaces;
 
-namespace BowlingGame.Core.DomainModels;
+namespace BowlingGame.Core.Domain;
 public class GameDomain
 {
-    public Game State { get; private set; }
-    private bool IsLastTurn => State.Turn == 10;
+    public Game GameState { get; private set; }
+    private bool _isLastTurn => GameState.Turn == 10;
+    private ITurnStrategy _turnStrategy;
 
-    public GameDomain(Game state)
+    public GameDomain(Game game)
     {
-        State = state;
+        GameState = game;
     }
 
     public (bool Valid, string ErrorMessage) ValidateGame()
     {
-        if (State.Lane <= 0)
+        if (GameState.Lane <= 0)
         {
             return (false, "Lane number invalid");
         }
 
-        if (State.Rows.Count == 0)
+        if (GameState.Rows.Count == 0)
         {
             return (false, "Game has no players");
         }
 
-        if (State.Rows.Any(r => r.Frames.Count != 10))
+        if (GameState.Rows.Any(r => r.Frames.Count != 10))
         {
             return (false, "Frame count invalid");
         }
 
-        if (State.Rows.SelectMany(r => r.Frames).Any(f => f.FirstThrowValue() + f.SecondThrowValue() > 10) && IsLastTurn == false)
+        if (GameState.Rows.SelectMany(r => r.Frames).Any(f => f.FirstThrowValue() + f.SecondThrowValue() > 10) && _isLastTurn == false)
         {
             return (false, "Frame score too high");
         }
 
-        if (State.Rows.SelectMany(r => r.Frames).Any(f => f.FirstThrowValue() + f.SecondThrowValue() < 0))
+        if (GameState.Rows.SelectMany(r => r.Frames).Any(f => f.FirstThrowValue() + f.SecondThrowValue() < 0))
         {
             return (false, "Frame score too low");
         }
@@ -44,131 +47,32 @@ public class GameDomain
 
     public void StartGame()
     {
-        State.Turn = 1;
-        State.Rows.First().HasTurn = true;
+        GameState.Turn = 1;
+        GameState.Rows.First().HasTurn = true;
     }
 
-    public void AddScore(int score)
+    public void ExecuteTurn(int score)
     {
-        var rowWithTurn = State.Rows
+        var rowWithTurn = GameState.Rows
             .Where(r => r.HasTurn)
             .Single();
 
         var activeFrame = rowWithTurn.Frames
-            .Where(f => f.Order == State.Turn)
+            .Where(f => f.Order == GameState.Turn)
             .Single();
 
-        if (activeFrame.PointsFirstThrow.HasValue == false)
+        if (_isLastTurn)
         {
-            activeFrame.PointsFirstThrow = score;
-            CalcuteBonusForPreviousFrames(rowWithTurn, activeFrame);
-        }
-        else if (activeFrame.PointsSecondThrow.HasValue == false)
-        {
-            activeFrame.PointsSecondThrow = score;
-            CalcuteBonusForPreviousFrames(rowWithTurn, activeFrame);
-        }
-        else if (IsLastTurn)
-        {
-            activeFrame.PointsExtraThrow = score;
-            CalculateBonusForTenthFrame(activeFrame);
-        }
-
-        if (activeFrame.IsStrike() || activeFrame.ThrowsUsed())
-        {
-            MoveTurn(rowWithTurn, activeFrame);
-        }
-
-        CalculateTotalScoreForRow(rowWithTurn);
-    }
-
-    private void CalcuteBonusForPreviousFrames(Row rowWithTurn, Frame activeFrame)
-    {
-        var previousFrame = rowWithTurn.Frames
-            .SingleOrDefault(f => f.Order == activeFrame.Order - 1);
-
-        if (previousFrame == null)
-        {
-            return;
-        }
-
-        if (previousFrame.IsSpare())
-        {
-            previousFrame.PointsBonus = activeFrame.FirstThrowValue();
-        }
-
-        if (previousFrame.IsStrike())
-        {
-            previousFrame.PointsBonus = activeFrame.FirstThrowValue() + activeFrame.SecondThrowValue();
-
-            var framebeforePrevious = rowWithTurn.Frames
-                .SingleOrDefault(f => f.Order == activeFrame.Order - 2);
-
-            if (framebeforePrevious == null)
-            {
-                return;
-            }
-
-            var isFirstThrow = activeFrame.PointsSecondThrow.HasValue == false;
-            var isTenthFrameBonusThrow = IsLastTurn && activeFrame.IsStrike() && activeFrame.PointsSecondThrow.HasValue;
-
-            if (framebeforePrevious.IsStrike() && isFirstThrow && isTenthFrameBonusThrow == false)
-            {
-                framebeforePrevious.PointsBonus += activeFrame.FirstThrowValue();
-            }
-        }
-    }
-
-    private void CalculateBonusForTenthFrame(Frame activeFrame)
-    {
-        if (activeFrame.IsSpare())
-        {
-            activeFrame.PointsBonus = activeFrame.BonusThrowValue();
-        }
-
-        if (activeFrame.IsStrike())
-        {
-            activeFrame.PointsBonus = activeFrame.SecondThrowValue() + activeFrame.BonusThrowValue();
-        }
-    }
-
-
-    private void CalculateTotalScoreForRow(Row rowWithTurn)
-    {
-        var totalScore = rowWithTurn.Frames.Sum(f => f.FirstThrowValue() + f.SecondThrowValue() + f.BonusValue());
-
-        if (rowWithTurn.Frames.Last().IsStrike())
-        {
-            totalScore -= rowWithTurn.Frames.Last().SecondThrowValue();
-        }
-
-        rowWithTurn.TotalScore = totalScore;
-    }
-
-    private void MoveTurn(Row rowWithTurn, Frame activeFrame)
-    {
-        if (IsLastTurn && (activeFrame.IsSpare() || activeFrame.IsStrike()) && activeFrame.PointsExtraThrow.HasValue == false)
-        {
-            return;
-        }
-
-        var nextRow = State.Rows
-            .SingleOrDefault(r => r.Order == rowWithTurn.Order + 1);
-
-        if (nextRow != null)
-        {
-            rowWithTurn.HasTurn = false;
-            nextRow.HasTurn = true;
-        }
-        else if (IsLastTurn == false)
-        {
-            State.Turn++;
-            rowWithTurn.HasTurn = false;
-            State.Rows.First().HasTurn = true;
+            _turnStrategy = new LastTurnStrategy();
         }
         else
         {
-            State.IsOngoing = false;
+            _turnStrategy = new RegularTurnStrategy();
         }
+
+        _turnStrategy.AddScore(score, rowWithTurn, activeFrame);
+        _turnStrategy.CalculateBonus(rowWithTurn, activeFrame);
+        _turnStrategy.MoveTurn(GameState, rowWithTurn, activeFrame);
+        _turnStrategy.CalculateTotalScore(rowWithTurn);
     }
 }

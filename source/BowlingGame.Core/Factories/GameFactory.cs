@@ -1,4 +1,4 @@
-﻿using BowlingGame.Core.DomainModels;
+﻿using BowlingGame.Core.Domain;
 using BowlingGame.Core.Entities;
 
 namespace BowlingGame.Core.Factories;

@@ -35,7 +35,7 @@ public class GameService
     public async Task AddScore(int lane, int score)
     {
         var gameDomain = await _gameRepository.GetByLane(lane);
-        gameDomain.AddScore(score);
+        gameDomain.ExecuteTurn(score);
 
         var validationResult = gameDomain.ValidateGame();
         if (validationResult.Valid == false)

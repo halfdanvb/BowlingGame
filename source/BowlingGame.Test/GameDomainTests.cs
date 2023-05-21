@@ -1,6 +1,5 @@
-﻿using BowlingGame.Core.DomainModels;
+﻿using BowlingGame.Core.Domain;
 using BowlingGame.Core.Factories;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace BowlingGame.Test;
 public class GameDomainTests
@@ -14,10 +13,10 @@ public class GameDomainTests
 
         //Act
         gameDomain.StartGame();
-        gameDomain.AddScore(score);
+        gameDomain.ExecuteTurn(score);
 
         //Assert
-        var firstRow = gameDomain.State.Rows.First();
+        var firstRow = gameDomain.GameState.Rows.First();
         var firstFrame = firstRow.Frames.First();
 
         Assert.That(firstFrame.PointsFirstThrow.HasValue, Is.True);
@@ -36,11 +35,11 @@ public class GameDomainTests
 
         //Act
         gameDomain.StartGame();
-        gameDomain.AddScore(firstScore);
-        gameDomain.AddScore(secondScore);
+        gameDomain.ExecuteTurn(firstScore);
+        gameDomain.ExecuteTurn(secondScore);
 
         //Assert
-        var firstRow = gameDomain.State.Rows.First();
+        var firstRow = gameDomain.GameState.Rows.First();
         var firstFrame = firstRow.Frames.First();
 
         Assert.That(firstFrame.PointsSecondThrow.HasValue, Is.True);
@@ -58,10 +57,10 @@ public class GameDomainTests
 
         //Act
         gameDomain.StartGame();
-        gameDomain.AddScore(score);
+        gameDomain.ExecuteTurn(score);
 
         //Assert
-        var firstRow = gameDomain.State.Rows.First();
+        var firstRow = gameDomain.GameState.Rows.First();
         var firstFrame = firstRow.Frames.First();
 
         Assert.That(firstFrame.PointsFirstThrow.HasValue, Is.True);
@@ -80,17 +79,17 @@ public class GameDomainTests
         var bonusScore = 5;
 
         //Act
-        gameDomain.AddScore(firstScore);
-        gameDomain.AddScore(secondScore);
-        gameDomain.AddScore(bonusScore);
+        gameDomain.ExecuteTurn(firstScore);
+        gameDomain.ExecuteTurn(secondScore);
+        gameDomain.ExecuteTurn(bonusScore);
 
         //Assert
-        var lastRow = gameDomain.State.Rows.Last();
+        var lastRow = gameDomain.GameState.Rows.Last();
         var lastFrame = lastRow.Frames.Last();
 
         Assert.That(lastFrame.PointsExtraThrow.HasValue, Is.True);
         Assert.That(lastFrame.PointsExtraThrow.Value, Is.EqualTo(bonusScore));
-        Assert.That(gameDomain.State.IsOngoing, Is.False);
+        Assert.That(gameDomain.GameState.IsOngoing, Is.False);
     }
 
     private GameDomain CreateGameDomain()
@@ -113,8 +112,8 @@ public class GameDomainTests
 
         for (int i = 0; i < 9; i++)
         {
-            gameDomain.AddScore(5);
-            gameDomain.AddScore(5);
+            gameDomain.ExecuteTurn(5);
+            gameDomain.ExecuteTurn(5);
         }
 
         return gameDomain;

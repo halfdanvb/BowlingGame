@@ -2,7 +2,6 @@
 using BowlingGame.Infrastructure.Datebase;
 using BowlingGame.Infrastructure.Datebase.Queries;
 using BowlingGame.Infrastructure.Datebase.Repositories;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace BowlingGame.Application;
 
@@ -17,7 +16,7 @@ internal class Program
 
         var gameService = new GameService(gameRepository, gameQuery, unitOfWOrk);
 
-        var players = new List<string>() { "Hans", "Grete" };
+        var players = new List<string>() { "Hans" };
         var lane = 1;
 
         await gameService.CreateAndStart(players, lane);

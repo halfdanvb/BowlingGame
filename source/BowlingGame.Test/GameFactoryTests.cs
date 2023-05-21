@@ -17,6 +17,6 @@ public class GameFactoryTests
 
         // Assert
         Assert.That(validationResult.Valid, Is.True);
-        Assert.That(gameDomain.State.Rows.Count, Is.EqualTo(playerNames.Count));
+        Assert.That(gameDomain.GameState.Rows.Count, Is.EqualTo(playerNames.Count));
     }
 }
